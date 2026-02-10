@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    environment:
+      - DATABASE_URL=file:/app/prisma/dev.db
+      # - GEMINI_API_KEY=${GEMINI_API_KEY} # Uncomment if you have .env locally
+    volumes:
+      - ./prisma/dev.db:/app/prisma/dev.db
+    restart: always
