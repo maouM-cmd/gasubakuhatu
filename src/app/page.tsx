@@ -16,7 +16,6 @@ async function getStats() {
     where: { year, month }
   });
 
-  // Calculate percentage
   const readingProgress = totalCustomers > 0
     ? Math.round((readingsCount / totalCustomers) * 100)
     : 0;
@@ -33,6 +32,28 @@ async function getStats() {
 }
 
 export default async function Dashboard() {
+  if (!process.env.DATABASE_URL) {
+    return (
+      <div>
+        <div className="page-header">
+          <h1>
+            <span>⛽</span> ダッシュボード
+          </h1>
+          <p>DATABASE_URL を設定すると顧客・請求データを表示できます。</p>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h2>セットアップ待ち</h2>
+          </div>
+          <div className="card-body">
+            環境変数設定後に <code>npm run dev</code> を再起動してください。
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const stats = await getStats();
 
   return (
