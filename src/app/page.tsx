@@ -1,66 +1,88 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+async function getStats() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  const totalCustomers = await prisma.customer.count({
+    where: { status: 'active' }
+  });
+
+  const readingsCount = await prisma.meterReading.count({
+    where: { year, month }
+  });
+
+  // Calculate percentage
+  const readingProgress = totalCustomers > 0
+    ? Math.round((readingsCount / totalCustomers) * 100)
+    : 0;
+
+  const unpaidInvoices = await prisma.invoice.count({
+    where: { status: { in: ['unpaid', 'overdue'] } }
+  });
+
+  return {
+    totalCustomers,
+    readingProgress,
+    unpaidInvoices
+  };
+}
+
+export default async function Dashboard() {
+  const stats = await getStats();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div>
+      <div className="page-header">
+        <h1>
+          <span>🏠</span> ダッシュボード
+        </h1>
+        <p>業務の進捗状況を確認しましょう。</p>
+      </div>
+
+      <div className="stats-grid">
+        <div className="stat-card">
+          <div className="stat-icon blue">👥</div>
+          <div>
+            <div className="stat-value">{stats.totalCustomers}</div>
+            <div className="stat-label">総顧客数</div>
+          </div>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="stat-card">
+          <div className="stat-icon orange">📊</div>
+          <div>
+            <div className="stat-value">{stats.readingProgress}%</div>
+            <div className="stat-label">今月の検針完了率</div>
+          </div>
         </div>
-      </main>
+        <div className="stat-card">
+          <div className="stat-icon red">💰</div>
+          <div>
+            <div className="stat-value">{stats.unpaidInvoices}件</div>
+            <div className="stat-label">未入金件数</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-header">
+          <h2>📌 ショートカット</h2>
+        </div>
+        <div className="card-body">
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <Link href="/readings" className="btn btn-primary btn-lg">
+              📊 今月の検針を入力する
+            </Link>
+            <Link href="/customers/new" className="btn btn-secondary btn-lg">
+              👥 新しい顧客を登録する
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

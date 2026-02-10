@@ -1,11 +1,81 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
+}
+
+model Company {
+  id            Int      @id @default(autoincrement())
+  name          String   @default("サンプルガス株式会社")
+  address       String   @default("")
+  phone         String   @default("")
+  invoiceNumber String   @default("") // インボイス番号 T + 13桁
+  taxRate       Float    @default(0.10) // 消費税率
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String   @default("")
+  phone     String   @default("")
+  basePrice Float    @default(1980) // 基本料金
+  unitPrice Float    @default(580) // 従量単価 (円/m³)
+  planName  String   @default("標準プラン")
+  status    String   @default("active") // active / inactive
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  meterReadings MeterReading[]
+  invoices      Invoice[]
+}
+
+model MeterReading {
+  id              Int      @id @default(autoincrement())
+  customerId      Int
+  year            Int
+  month           Int
+  previousReading Float
+  currentReading  Float
+  usage           Float // currentReading - previousReading
+  imageUrl        String?
+  readAt          DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  invoice  Invoice?
+}
+
+model Invoice {
+  id             Int      @id @default(autoincrement())
+  customerId     Int
+  meterReadingId Int      @unique
+  year           Int
+  month          Int
+  baseAmount     Float // 基本料金
+  usageAmount    Float // 従量料金
+  subtotal       Float // 小計
+  tax            Float // 消費税
+  total          Float // 合計
+  status         String   @default("unpaid") // unpaid / paid / overdue
+  issuedAt       DateTime @default(now())
+  dueDate        DateTime
+
+  customer     Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  meterReading MeterReading @relation(fields: [meterReadingId], references: [id], onDelete: Cascade)
+  payments     Payment[]
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  invoiceId Int
+  amount    Float
+  method    String   @default("cash") // cash / transfer / other
+  paidAt    DateTime @default(now())
+  note      String   @default("")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 }
