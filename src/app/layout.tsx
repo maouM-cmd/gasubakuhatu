@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "@/components/Sidebar";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "ガス会社向け顧客管理・請求管理ツール",
