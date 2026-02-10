@@ -1,34 +1,37 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // Uses direct connection
 }
 
 model Company {
   id            Int      @id @default(autoincrement())
-  name          String   @default("サンプルガス株式会社")
+  name          String
   address       String   @default("")
   phone         String   @default("")
-  invoiceNumber String   @default("") // インボイス番号 T + 13桁
-  taxRate       Float    @default(0.10) // 消費税率
+  invoiceNumber String   @default("") // T + 13 digits
+  taxRate       Float    @default(0.10)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
 model Customer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  address   String   @default("")
-  phone     String   @default("")
-  basePrice Float    @default(1980) // 基本料金
-  unitPrice Float    @default(580) // 従量単価 (円/m³)
-  planName  String   @default("標準プラン")
-  status    String   @default("active") // active / inactive
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  id            Int      @id @default(autoincrement())
+  name          String
+  address       String
+  phone         String
+  basePrice     Int      @default(1500)
+  unitPrice     Int      @default(300)
+  status        String   @default("active") // active, inactive
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   meterReadings MeterReading[]
   invoices      Invoice[]
 }
@@ -36,46 +39,50 @@ model Customer {
 model MeterReading {
   id              Int      @id @default(autoincrement())
   customerId      Int
+  customer        Customer @relation(fields: [customerId], references: [id])
+  readAt          DateTime @default(now())
   year            Int
   month           Int
-  previousReading Float
   currentReading  Float
-  usage           Float // currentReading - previousReading
-  imageUrl        String?
-  readAt          DateTime @default(now())
+  previousReading Float
+  usage           Float
+  imageUrl        String?  // Optional: URL to stored image
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  invoice         Invoice?
 
-  customer Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  invoice  Invoice?
+  @@unique([customerId, year, month])
 }
 
 model Invoice {
-  id             Int      @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   customerId     Int
-  meterReadingId Int      @unique
+  customer       Customer     @relation(fields: [customerId], references: [id])
+  meterReadingId Int          @unique
+  meterReading   MeterReading @relation(fields: [meterReadingId], references: [id])
   year           Int
   month          Int
-  baseAmount     Float // 基本料金
-  usageAmount    Float // 従量料金
-  subtotal       Float // 小計
-  tax            Float // 消費税
-  total          Float // 合計
-  status         String   @default("unpaid") // unpaid / paid / overdue
-  issuedAt       DateTime @default(now())
+  baseAmount     Int
+  usageAmount    Int
+  subtotal       Int
+  tax            Int
+  total          Int
+  issuedAt       DateTime     @default(now())
   dueDate        DateTime
-
-  customer     Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  meterReading MeterReading @relation(fields: [meterReadingId], references: [id], onDelete: Cascade)
-  payments     Payment[]
+  status         String       @default("unpaid") // unpaid, paid, overdue
+  payments       Payment[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }
 
 model Payment {
   id        Int      @id @default(autoincrement())
   invoiceId Int
-  amount    Float
-  method    String   @default("cash") // cash / transfer / other
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  amount    Int
+  method    String   @default("cash") // cash, transfer, etc.
+  note      String?
   paidAt    DateTime @default(now())
-  note      String   @default("")
-
-  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

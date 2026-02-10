@@ -1,68 +1,39 @@
-# ガス会社向け顧客管理・請求管理ツール (Gas Explosion?)
+# ガス会社向け顧客管理・請求管理ツール
 
-プロパンガス販売会社向けの業務管理システムです。
-顧客管理、検針入力（OCR対応）、請求書発行、入金管理を一元化します。
+Vercel + Vercel Postgres で動作するように設定されたバージョンです。
 
-## 機能一覧
+## 🚀 Vercelへのデプロイ手順 (推奨)
 
-- **顧客管理**: 顧客情報の登録・検索・編集
-- **検針入力**: 
-  - メーター写真のOCR読み取り (Gemini Vision API)
-  - 前回指針との差分による使用量自動計算
-- **請求書発行**: 
-  - インボイス制度対応フォーマット
-  - 一括自動作成機能
-  - 印刷 / PDF保存
-- **入金管理**: 
-  - 未入金一覧
-  - 入金消込・履歴管理
-- **ダッシュボード**: 業務進捗の可視化
+このアプリをインターネット上で公開 ("普通のURL"化) するための手順です。
 
-## 技術スタック
+### 1. Vercel プロジェクトの作成
+1. [Vercel](https://vercel.com) にログイン。
+2. "Add New..." -> "Project" を選択。
+3. GitHubリポジトリ `gasubakuhatu` をインポート。
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Database**: SQLite
-- **ORM**: Prisma
-- **AI/OCR**: Google Gemini 1.5 Flash
-- **Styling**: Vanilla CSS (Tailwind不使用)
+### 2. データベース (Storage) の作成
+1. プロジェクト作成画面、または作成後の "Storage" タブに移動。
+2. "Create Database" -> "Postgres" を選択。
+3. 同意して作成 (Create) すると、自動的に環境変数が設定されます。
 
-## セットアップ手順
+### 3. 環境変数の追加設定
+"Settings" -> "Environment Variables" で以下を追加してください：
 
-### 1. 依存パッケージのインストール
-```bash
-npm install
-```
+- `GEMINI_API_KEY`: あなたのGoogle Gemini APIキー
 
-### 2. 環境変数の設定
-`.env.local` ファイルを作成し、以下の変数を設定してください。
-OCR機能を使用する場合は `GEMINI_API_KEY` が必要です（[Google AI Studio](https://aistudio.google.com/)で取得）。
+### 4. デプロイ
+設定が完了したら "Deploy" (または "Redeploy") をクリック。
+数分後、`https://gasubakuhatu.vercel.app` のようなURLが発行されます！
 
-```
-DATABASE_URL="file:./dev.db"
-GEMINI_API_KEY="your_api_key_here"
-```
+---
 
-### 3. データベースのセットアップ
-```bash
-npx prisma db push
-```
+## 💻 ローカルでの開発について
 
-### 4. 開発サーバーの起動
-```bash
-npm run dev
-```
-ブラウザで `http://localhost:3001` にアクセスしてください。
+データベースを PostgreSQL に変更したため、ローカルで実行するには工夫が必要です。
+一番簡単なのは、**Vercelのデータベースにローカルから接続する** 方法です。
 
-### 📱 スマホからアクセスする場合 (OCR機能のテスト)
-同じWi-Fiネットワークに接続したスマホからアクセスするには、PCのIPアドレスを使用します。
+1. Vercelの Storage 画面で `.env.local` の内容を表示し、コピーする。
+2. ローカルの `.env` ファイルに貼り付ける。
+3. `npm run dev` で起動。
 
-1. コマンドプロンプトで `ipconfig` (Windows) または `ifconfig` (Mac/Linux) を実行し、`IPv4アドレス` を確認します（例: `192.168.1.10`）。
-2. スマホのブラウザで `http://192.168.1.10:3001` にアクセスします。
-   ※カメラの使用許可を求められた場合は許可してください。
-
-
-## 運用・バックアップ
-
-データは `prisma/dev.db` (SQLiteファイル) に保存されます。
-このファイルを定期的にUSBメモリやクラウドストレージにバックアップしてください。
+こうすることで、手元のパソコンからでも Vercel 上のデータベースを操作できます。
