@@ -60,17 +60,8 @@ export default function CustomerForm({ customer }: { customer?: any }) {
                     />
                 </div>
 
+
                 <div className="form-row">
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="planName">契約プラン</label>
-                        <input
-                            id="planName"
-                            name="planName"
-                            type="text"
-                            className="form-input"
-                            defaultValue={customer?.planName || '標準プラン'}
-                        />
-                    </div>
                     <div className="form-group">
                         <label className="form-label" htmlFor="basePrice">基本料金 (円)</label>
                         <input
@@ -113,6 +104,6 @@ export default function CustomerForm({ customer }: { customer?: any }) {
                     <SubmitButton isEdit={isEdit} />
                 </div>
             </div>
-        </form>
+        </form >
     );
 }

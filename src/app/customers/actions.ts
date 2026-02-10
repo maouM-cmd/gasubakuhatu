@@ -35,7 +35,6 @@ export async function createCustomer(formData: FormData) {
     const phone = formData.get('phone') as string;
     const basePrice = parseFloat(formData.get('basePrice') as string) || 1980;
     const unitPrice = parseFloat(formData.get('unitPrice') as string) || 580;
-    const planName = formData.get('planName') as string || '標準プラン';
 
     await prisma.customer.create({
         data: {
@@ -44,7 +43,6 @@ export async function createCustomer(formData: FormData) {
             phone,
             basePrice,
             unitPrice,
-            planName,
             status: 'active',
         },
     });
@@ -59,7 +57,6 @@ export async function updateCustomer(id: number, formData: FormData) {
     const phone = formData.get('phone') as string;
     const basePrice = parseFloat(formData.get('basePrice') as string);
     const unitPrice = parseFloat(formData.get('unitPrice') as string);
-    const planName = formData.get('planName') as string;
     const status = formData.get('status') as string;
 
     await prisma.customer.update({
@@ -70,7 +67,6 @@ export async function updateCustomer(id: number, formData: FormData) {
             phone,
             basePrice,
             unitPrice,
-            planName,
             status,
         },
     });
