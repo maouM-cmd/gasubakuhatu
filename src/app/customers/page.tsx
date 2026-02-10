@@ -69,7 +69,6 @@ export default async function CustomersPage({
                                         <td>{customer.address}</td>
                                         <td>{customer.phone}</td>
                                         <td>
-                                            <div className="text-sm">{customer.planName}</div>
                                             <div className="text-xs text-muted">Base: ¥{customer.basePrice} / Unit: ¥{customer.unitPrice}</div>
                                         </td>
                                         <td className="text-right">
